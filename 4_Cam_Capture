@@ -1,0 +1,101 @@
+#Relevant libraries may need to be installed in order for this to work
+#s3cmd is the connection to the amazon web server s3. All our images go there
+#This code is written by JUNAID CHATOOR soleley for inHouse Produce!
+
+#import relevant pins
+import RPi.GPIO as gp
+import os
+import time
+
+gp.setwarnings(False)
+gp.setmode(gp.BOARD)
+
+#GPIO pins needed for enabling all 4 cameras
+gp.setup(7, gp.OUT)
+gp.setup(11, gp.OUT)
+gp.setup(12, gp.OUT)
+
+#GPIO pins needed if more camera attached i.e. another Arducam with four more cameras
+gp.setup(15, gp.OUT)
+gp.setup(16, gp.OUT)
+gp.setup(21, gp.OUT)
+gp.setup(22, gp.OUT)
+
+#All pins activated
+gp.output(11, True)
+gp.output(12, True)
+gp.output(15, True)
+gp.output(16, True)
+gp.output(21, True)
+gp.output(22, True)
+
+First image from all four camreas
+cam1 = 1;
+cam2 = 1;
+cam3 = 1;
+cam4 = 1;
+
+def main():
+    while True:
+      #pins for first camera
+      gp.output(7, False)
+      gp.output(11, False)
+      gp.output(12, True)
+      capture(cam1)
+
+      #pins for second camera
+      gp.output(7, True)
+      gp.output(11, False)
+      gp.output(12, True)
+      capture(cam2)
+
+      #pins for third camera
+      gp.output(7, False)
+      gp.output(11, True)
+      gp.output(12, False)
+      capture(cam3)
+
+      #pins for fourth camera
+      gp.output(7, True)
+      gp.output(11, True)
+      gp.output(12, False)
+      capture(cam4)
+      #increment
+      cam1 = cam1 + 1;
+      cam2 = cam2 + 1;
+      cam3 = cam3 + 1;
+      cam4 = cam4 + 1;
+      #30 minute intervals
+      time.sleep(1800)
+
+def capture(cam1):
+    #saves images on Pi desktop
+    cmd1 = "raspistill -o ger_%d.jpg" % cam1
+    os.system(cmd1) 
+    #sends images to s3
+    cmd11 = "s3cmd ger_%d.jpg s3://SIL/germination/ger_%d.jpg" % cam1
+    os.system(cmd11) 
+
+def capture(cam2):
+    cmd2 = "raspistill -o firstF_%d.jpg" % cam2
+    os.system(cmd2)
+    cmd12 = "s3cmd firstF_%d.jpg s3://SIL/firstfloor/firstF_%d.jpg" % cam2
+    os.system(cmd12)
+    
+def capture(cam3):
+    cmd3 = "raspistill -o secondF_%d.jpg" % cam3
+    os.system(cmd3)
+    cmd13 = "s3cmd secondF_%d.jpg s3://SIL/secondfloor/secondF_%d.jpg" % cam3
+    os.system(cmd13)
+    
+def capture(cam4):
+    cmd4 = "raspistill -o thirdF_%d.jpg" % cam4
+    os.system(cmd4)
+    cmd14 = "s3cmd thirdF_%d.jpg s3://SIL/thirdfloor/thirdF_%d.jpg" % cam4
+    os.system(cmd14)
+    
+if __name__ == "__main__":
+    main()
+    
+
+    
